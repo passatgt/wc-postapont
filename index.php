@@ -4,7 +4,7 @@
  * Plugin Name: WooCommerce PostaPont
  * Plugin URI: http://visztpeter.me
  * Description: PostaPont integráció WooCommerce-hez. 
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Peter Viszt
  * Author URI: http://visztpeter.me
  */
@@ -29,7 +29,7 @@ class WC_PostaPont {
 		self::$plugin_basename = plugin_basename(__FILE__);
 		self::$plugin_url = plugin_dir_url(self::$plugin_basename);
 		self::$plugin_path = trailingslashit(dirname(__FILE__));
-		self::$version = '1.0'; 
+		self::$version = '1.0.1'; 
 
 		//Add settings to Settings / Shipping
 		add_filter( 'woocommerce_shipping_settings', array( $this, 'settings' ) );
@@ -38,7 +38,7 @@ class WC_PostaPont {
  		add_action('wp_enqueue_scripts', array( $this, 'frontend_css_js') );
 
  		//Add html for the map selector
- 		add_action('woocommerce_review_order_before_payment', array( $this, 'wc_postapont_map_html') );
+ 		add_action('woocommerce_review_order_after_order_total', array( $this, 'wc_postapont_map_html') );
 
  		//Validate PostaPont selection
  		add_action('woocommerce_checkout_process', array( $this, 'wc_postapont_map_validation') );
@@ -154,9 +154,13 @@ class WC_PostaPont {
 		$chosen_shipping = $chosen_methods[0]; 
 		if(get_option('wc_postapont_shipping_method') == $chosen_methods[0]):
 		?>
-		<div id="postapontvalasztoapi"></div>
-		<input type="hidden" name="wc_selected_postapont" id="wc_selected_postapont" />
-		<div id="valasztott_postapont"><strong><?php _e('A kiválasztott Posta Pont átvevőhely:','wc_postapont'); ?></strong><p><?php _e('Kérjük, válasszon <strong>átvevőhelyet</strong> a legördülő listából, vagy a térképen egy PostaPontra kattintva!','wc_postapont'); ?></p></div>
+		<tr class="wc_postapont_select_row">
+			<td colspan="2">
+				<div id="postapontvalasztoapi"></div>
+				<input type="hidden" name="wc_selected_postapont" id="wc_selected_postapont" />
+				<div id="valasztott_postapont"><strong><?php _e('A kiválasztott Posta Pont átvevőhely:','wc_postapont'); ?></strong><p><?php _e('Kérjük, válasszon <strong>átvevőhelyet</strong> a legördülő listából, vagy a térképen egy PostaPontra kattintva!','wc_postapont'); ?></p></div>
+			</td>
+		</tr>
 		<?php
 		endif;
 	}
@@ -288,7 +292,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 						'options' => array(
 							'title' 		=> __( 'Additional Rates', 'woocommerce' ),
 							'type' 			=> 'textarea',
-							'description'	=> __( 'Soronként egy szállítási értéket lehet megadni súly alapján: Minimum súly | Maximum súly | Ár<br> Például: <code>0 | 1 | 1250</code>.', 'wc_postapont' ),
+							'description'	=> __( 'Soronként egy szállítási értéket lehet megadni súly alapján: Minimum súly(kg) | Maximum súly(kg) | Ár<br> Például: <code>0 | 1 | 1250</code>.', 'wc_postapont' ),
 							'default'		=> '',
 							'desc_tip'		=> true,
 							'placeholder'	=> __( 'Minimum súly | Maximum súly | Ár', 'wc_postapont' )
@@ -326,16 +330,21 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 								$costs[] = $this_option[2];
 							}
 						}
+						
+						if(!empty($costs)) {
 	
-						//Add shipping rate
-						$rate = array(
-							'id' => $this->id,
-							'label' => $this->title,
-							'cost' => min($costs),
-						);
-	 
-						// Register the rate
-						$this->add_rate( $rate );
+							//Add shipping rate
+							$rate = array(
+								'id' => $this->id,
+								'label' => $this->title,
+								'cost' => min($costs),
+							);
+							
+							// Register the rate
+							$this->add_rate( $rate );
+						
+						}
+						
 					}
 				
 				}
