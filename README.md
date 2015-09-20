@@ -5,6 +5,7 @@ PostaPont szállítási mód WooCommerce-hez.
 
 -----------------------
 Changelog:
+* v1.0.1 - WooCommerce 2.2+ kompatibilitás
 * v1.0 - Első verzió:)
 
 -----------------------
