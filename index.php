@@ -1,10 +1,10 @@
 <?php
 
-/** 
+/**
  * Plugin Name: WooCommerce PostaPont
  * Plugin URI: http://visztpeter.me
- * Description: PostaPont integráció WooCommerce-hez. 
- * Version: 1.0.1
+ * Description: PostaPont integráció WooCommerce-hez.
+ * Version: 1.0.2
  * Author: Peter Viszt
  * Author URI: http://visztpeter.me
  */
@@ -29,7 +29,7 @@ class WC_PostaPont {
 		self::$plugin_basename = plugin_basename(__FILE__);
 		self::$plugin_url = plugin_dir_url(self::$plugin_basename);
 		self::$plugin_path = trailingslashit(dirname(__FILE__));
-		self::$version = '1.0.1'; 
+		self::$version = '1.0.2'; 
 
 		//Add settings to Settings / Shipping
 		add_filter( 'woocommerce_shipping_settings', array( $this, 'settings' ) );
@@ -54,11 +54,11 @@ class WC_PostaPont {
 		add_action( 'woocommerce_email_after_order_table', array( $this, 'wc_postapont_show_selected_location_admin') ,10,1);
 
     }
-    
+
     //Add CSS & JS
 	public function frontend_css_js() {
 		global $post;
-		
+
 		//Only if we're on the checkout page
 		if(get_the_ID () == get_option ( 'woocommerce_checkout_page_id' , 0 )) {
 			$google_maps_url = 'http://maps.googleapis.com/maps/api/js?sensor=false&language=hu&region=HU';
@@ -68,7 +68,7 @@ class WC_PostaPont {
 			wp_enqueue_script('wc-postapont-google-maps', $google_maps_url,array( 'jquery' ));
 			wp_enqueue_style('wc-postapont-css',wc_postapont::$plugin_url.'postapont.css');
 			wp_register_script( 'wc-postapont-js', wc_postapont::$plugin_url.'postapont.js',array( 'jquery' ));
-			
+
 			$categories = array('10_posta','20_molkut','30_csomagautomata');
 			$posta_pont_options = array();
 			foreach($categories as $category) {
@@ -78,7 +78,7 @@ class WC_PostaPont {
 			}
 			wp_localize_script( 'wc-postapont-js', 'posta_pont_options', $posta_pont_options );
 			wp_enqueue_script('wc-postapont-js');
-		
+
 		}
     }
 
@@ -89,7 +89,7 @@ class WC_PostaPont {
 			if ( isset( $section['id'] ) && 'shipping_options' == $section['id'] && isset( $section['type'] ) && 'sectionend' == $section['type'] ) {
 				$shipping_methods = array();
 				global $woocommerce;
-				
+
 				$updated_settings[] = array(
 					'title'         => __( 'Posta Pont Jelölőkategóriák', 'wc_postapont' ),
 					'desc'          => __( 'PostaPontok', 'wc_postapont' ),
@@ -98,7 +98,7 @@ class WC_PostaPont {
 					'type'          => 'checkbox',
 					'checkboxgroup' => 'start'
 				);
-				
+
 				$updated_settings[] = array(
 					'desc'          => __( 'MOL PostaPontok', 'wc_postapont' ),
 					'id'            => 'woocommerce_postapont_20_molkut',
@@ -106,9 +106,9 @@ class WC_PostaPont {
 					'type'          => 'checkbox',
 					'checkboxgroup' => '',
 					'autoload'      => false
-				
+
 				);
-				
+
 				$updated_settings[] = array(
 					'desc'          => __( 'Csomagautomaták', 'wc_postapont' ),
 					'id'            => 'woocommerce_postapont_30_csomagautomata',
@@ -118,12 +118,12 @@ class WC_PostaPont {
 					'autoload'      => false,
 					'desc_tip'      => __( 'Alapértelmezésben minden jelölőkategória megjelenik a térképen. Egy vagy több kategória is kikapcsolható egyszerre.', 'wc_postapont' ),
 				);
-	
+
 				$shipping_methods[''] = __( 'Válassz egy szállítási módot', 'wc_postapont' );
 				foreach ( WC()->shipping->load_shipping_methods() as $method ) {
 					if($method->enabled == 'yes') $shipping_methods[$method->id] = $method->get_title();
 				}
-	
+
 				$updated_settings[] = array(
 					'name'     => __( 'Posta Pont Szállítási Mód', 'wc_postapont' ),
 					'id'       => 'wc_postapont_shipping_method',
@@ -133,7 +133,7 @@ class WC_PostaPont {
 					'class'	   => 'chosen_select',
 					'desc'     => '<br>'.__( 'Válaszd ki azt a szállítási módot, amikor szeretnéd, hogy a Posta Pont térkép megjelenjen.', 'wc_postapont' ),
 				);
-	
+
 				$updated_settings[] = array(
 					'name'     => __( 'Posta Pont Google Api Key', 'wc_postapont' ),
 					'id'       => 'wc_postapont_maps_api',
@@ -141,7 +141,7 @@ class WC_PostaPont {
 					'desc'     => __( 'Opcionális', 'wc_postapont' ),
 					'desc_tip' =>  __( 'A térkép használata ingyenes, azonban nagyobb forgalom esetén üzleti licence szükséges. Készíthet úgynevezett API kulcsot is a térkép alkalmazásához, amellyel nyomon követheti annak használatát, statisztikákat kérhet, és más hasznos tevékenységet végezhet. Opcionális.', 'wc_postapont' ),
 				);
-	
+
 			}
 			$updated_settings[] = $section;
 		}
@@ -151,7 +151,7 @@ class WC_PostaPont {
 	//Display extra HTML on checkout
 	public function wc_postapont_map_html() {
 		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
-		$chosen_shipping = $chosen_methods[0]; 
+		$chosen_shipping = $chosen_methods[0];
 		if(get_option('wc_postapont_shipping_method') == $chosen_methods[0]):
 		?>
 		<tr class="wc_postapont_select_row">
@@ -169,12 +169,12 @@ class WC_PostaPont {
 	public function wc_postapont_map_validation() {
 		//Only required if its a posta pont shipping method
 		$chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
-		$chosen_shipping = $chosen_methods[0]; 
+		$chosen_shipping = $chosen_methods[0];
 		if(get_option('wc_postapont_shipping_method') == $chosen_methods[0]) {
-		
+
 		    if ( ! $_POST['wc_selected_postapont'] )
 	        wc_add_notice( __( 'Kérjük, válasszon <strong>átvevőhelyet</strong> a legördülő listából, vagy a térképen egy PostaPontra kattintva!', 'wc_postapont' ), 'error' );
-	
+
 	    }
 	}
 
@@ -183,7 +183,7 @@ class WC_PostaPont {
 		if ( ! empty( $_POST['wc_selected_postapont'] ) ) {
 			update_post_meta( $order_id, 'wc_selected_postapont', sanitize_text_field( $_POST['wc_selected_postapont'] ) );
 	    }
-	}	
+	}
 
 	//Display on the Thank You page
 	public function wc_postapont_thankyou_page($order_id) {
@@ -200,33 +200,33 @@ class WC_PostaPont {
 			<?php
 		}
 	}
-	
+
 	//Display on admin order page
 	public function wc_postapont_show_selected_location_admin($order){
-	
+
 		//Check if PostaPont was selected
 		$posta_pont_data = get_post_meta($order->id,'wc_selected_postapont',true);
 		if($posta_pont_data) {
 			$posta_pont_data = explode('|', $posta_pont_data);
 			$posta_pont_data = implode('<br>', $posta_pont_data);
 		}
-		
+
 		?>
 		<h4><?php _e('A kiválasztott Posta Pont átvevőhely:','wc_postapont'); ?></h4>
 		<p>
 		<?php echo $posta_pont_data; ?>
 		</p>
 		<?php
-	
+
 	}
-	
+
 }
 
 $GLOBALS['wc_postapont'] = new wc_postapont();
 
 //PostaPont szállítási mód súly alapján
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
- 
+
 	function wc_postapont_shipping_method_init() {
 		if ( ! class_exists( 'WC_PostaPont_Shipping_Method' ) ) {
 			class WC_PostaPont_Shipping_Method extends WC_Shipping_Method {
@@ -242,7 +242,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 					$this->method_description = __( 'Ez egy egyszerű súly alapú szállítási mód. A Posta Pont intergrációhoz nem kötelező használni, mert a térképes választót bármely, már meglévő szállítási módhoz hozzá lehet csatolni a Beállítások / Szállítás menüpontban.', 'wc_postapont' ); // Description shown in admin
 					$this->init();
 				}
- 
+
 				/**
 				 * Init your settings
 				 *
@@ -258,12 +258,12 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 					$this->title 		  = $this->get_option( 'title' );
 					$this->tax_status	  = $this->get_option( 'tax_status' );
 					$this->options 		  = (array) explode( "\n", $this->get_option( 'options' ) );
- 
+
 					// Save settings in admin if you have any defined
 					add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 				}
- 
- 
+
+
 				function init_form_fields() {
 
 					$this->form_fields = array(
@@ -298,9 +298,9 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 							'placeholder'	=> __( 'Minimum súly | Maximum súly | Ár', 'wc_postapont' )
 						)
 					);
-						
+
 				}
- 
+
 				/**
 				 * calculate_shipping function.
 				 *
@@ -309,56 +309,56 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 				 * @return void
 				 */
 				public function calculate_shipping( $package ) {
-	
+
 					if ( sizeof( $this->options ) > 0) {
-			
+
 						//Get items weight
 						global $woocommerce;
 						$total_weight = $woocommerce->cart->cart_contents_weight;
-						
+
 						//Shipping costs
 						$costs = array();
-			
+
 						// Loop options
 						foreach ( $this->options as $option ) {
-			
+
 							$this_option = array_map( 'trim', explode( WC_DELIMITER, $option ) );
-			
+
 							if ( sizeof( $this_option ) !== 3 ) continue;
-							
+
 							if(($total_weight >= $this_option[0]) && ($total_weight <= $this_option[1])) {
 								$costs[] = $this_option[2];
 							}
 						}
-						
+
 						if(!empty($costs)) {
-	
+
 							//Add shipping rate
 							$rate = array(
 								'id' => $this->id,
 								'label' => $this->title,
 								'cost' => min($costs),
 							);
-							
+
 							// Register the rate
 							$this->add_rate( $rate );
-						
+
 						}
-						
+
 					}
-				
+
 				}
 			}
 		}
 	}
- 
+
 	add_action( 'woocommerce_shipping_init', 'wc_postapont_shipping_method_init' );
- 
+
 	function wc_postapont_add_shipping_method( $methods ) {
 		$methods[] = 'WC_PostaPont_Shipping_Method';
 		return $methods;
 	}
- 
+
 	add_filter( 'woocommerce_shipping_methods', 'wc_postapont_add_shipping_method' );
 }
 
