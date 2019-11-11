@@ -1,6 +1,11 @@
 WooCommerce PostaPont
 ===========
 
+> ## FONTOS: ez a bővítmény már nem kompatibilis az új WooCommerce verziókkal és nem is lesz az a jövőben. Helyette használd a kettő közül valamelyiket:
+> 
+> https://weboldalneked.eu/wordpress-bovitmenyek/
+> https://szathmari.hu/wordpress/15-pick-pack-pont-posta-pont-gls-csomagpont-woocommerce-szallitasi-modul
+
 PostaPont szállítási mód WooCommerce-hez.
 
 -----------------------
